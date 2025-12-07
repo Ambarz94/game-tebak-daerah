@@ -8,6 +8,25 @@ let answered = false;
 let pilihKec = document.getElementById("pilihKecamatan");
 let resetBtn = document.getElementById("resetBtn");
 
+// Menambahkan tile layer dari OpenStreetMap (tanpa label)
+
+
+// Jika ingin menggunakan tile layer tanpa label (lebih bersih):
+const cartoLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    });
+cartoLayer.addTo(map);
+
+    // Handle the checkbox click event to show/hide the map layer
+    const toggleLayerCheckbox = document.getElementById("toggleLayer");
+    toggleLayerCheckbox.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        cartoLayer.addTo(map);  // Show the map layer
+      } else {
+        cartoLayer.removeFrom(map);  // Hide the map layer
+      }
+    });
 fetch("daerah.geojson")
   .then(res => res.json())
   .then(data => {
