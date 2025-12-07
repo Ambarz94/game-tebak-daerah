@@ -2,8 +2,8 @@ let map = L.map("map", { zoomControl: true, attributionControl: false }).setView
 
 let geoLayer;
 let targetName = "";
-let answered = false;
 let answeredDesa = new Set();
+let answered = false;
 
 let pilihKec = document.getElementById("pilihKecamatan");
 let resetBtn = document.getElementById("resetBtn");
@@ -65,33 +65,33 @@ fetch("daerah.geojson")
     // EVENT: KECAMATAN DIPILIH
     // ===========================
     pilihKec.addEventListener("change", () => {
-  let kec = pilihKec.value;
-  answeredDesa.clear();
-  targetName = "";
+      let kec = pilihKec.value;
+      answeredDesa.clear();
+      targetName = "";
 
-  // hapus semua layer dulu
-  geoLayer.eachLayer(layer => map.removeLayer(layer));
+      // hapus semua layer dulu
+      geoLayer.eachLayer(layer => map.removeLayer(layer));
 
-  // tampilkan hanya desa di kecamatan yang dipilih
-  geoLayer.eachLayer(layer => {
-    if (layer.feature.properties.WADMKC === kec) {
-      layer.setStyle({ fillOpacity: 0.6, fillColor: "#ccc", color: "#555", weight: 1 });
-      layer.options.interactive = true;
-      layer.addTo(map);
-    }
-  });
+      // tampilkan hanya desa di kecamatan yang dipilih
+      geoLayer.eachLayer(layer => {
+        if (layer.feature.properties.WADMKC === kec) {
+          layer.setStyle({ fillOpacity: 0.6, fillColor: "#ccc", color: "#555", weight: 1 });
+          layer.options.interactive = true;
+          layer.addTo(map);
+        }
+      });
 
-  // zoom ke kecamatan
-  map.fitBounds(L.featureGroup(
-    geoLayer.getLayers().filter(l => l.feature.properties.WADMKC === kec)
-  ).getBounds());
+      // zoom ke kecamatan
+      map.fitBounds(L.featureGroup(
+        geoLayer.getLayers().filter(l => l.feature.properties.WADMKC === kec)
+      ).getBounds());
 
-  // pilih desa pertama secara acak
-  let desaKec = geoLayer.getLayers().filter(l => l.feature.properties.WADMKC === kec).map(l => l.feature.properties.WADMKD);
-  targetName = desaKec[Math.floor(Math.random() * desaKec.length)];
+      // pilih desa pertama secara acak
+      let desaKec = geoLayer.getLayers().filter(l => l.feature.properties.WADMKC === kec).map(l => l.feature.properties.WADMKD);
+      targetName = desaKec[Math.floor(Math.random() * desaKec.length)];
 
-  document.getElementById("question").innerText = "Klik desa: " + targetName;
-});
+      document.getElementById("question").innerText = "Klik desa: " + targetName;
+    });
 
     // ===========================
     // BUTTON RESET
