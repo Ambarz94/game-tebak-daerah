@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Game Tebak Daerah (Shapefile)</title>
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<meta charset="UTF-8">
+<title>Tebak Desa Karawang</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  #map { height: 600px; width: 100%; margin-bottom: 10px; }
+  #controls { margin-bottom: 10px; }
+</style>
 </head>
-
 <body>
-  <h2>Game Tebak Provinsi</h2>
-  <p id="question"></p>
 
-  <div id="map"></div>
+<div id="controls">
+  Kecamatan: 
+  <select id="pilihKecamatan">
+    <option value="">-- pilih kecamatan --</option>
+  </select>
+  <button id="resetBtn">Reset</button>
+</div>
 
-  <script src="game.js"></script>
+<div id="question">Pilih kecamatan untuk mulai.</div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="game.js"></script>
 </body>
 </html>

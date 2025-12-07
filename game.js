@@ -1,115 +1,111 @@
-let map = L.map("map", {
-  zoomControl: true,
-  attributionControl: false
-}).setView([-2.5, 117], 5);
-
-// ❌ Tidak memakai OpenStreetMap
+let map = L.map("map", { zoomControl: true, attributionControl: false }).setView([-6.32, 107.31], 12);
 
 let geoLayer;
 let targetName = "";
 let answered = false;
+let answeredDesa = new Set();
 
-// Menyimpan daerah yang sudah dijawab benar
-let correctAreas = new Set();
+let pilihKec = document.getElementById("pilihKecamatan");
+let resetBtn = document.getElementById("resetBtn");
 
-// --------------------
-// Load GeoJSON
-// --------------------
 fetch("daerah.geojson")
   .then(res => res.json())
   .then(data => {
+
+    // ===========================
+    // LOAD GEOJSON
+    // ===========================
     geoLayer = L.geoJSON(data, {
-      style: {
-        color: "#333",
-        weight: 1,
-        fillColor: "#eee",
-        fillOpacity: 0.7
-      },
+      style: { color: "#555", weight: 1, fillColor: "#ccc", fillOpacity: 0.6 },
       onEachFeature: (feature, layer) => {
         layer.on("click", () => {
-          if (answered) return;
+          if (!targetName || answeredDesa.has(feature.properties.WADMKD)) return;
 
-          let name = feature.properties.nama || feature.properties.NAMOBJ;
-
-          if (name === targetName) {
-            // Jawaban benar → hijau permanen
+          if (feature.properties.WADMKD === targetName) {
             layer.setStyle({ fillColor: "green", fillOpacity: 0.8 });
-
-            // Simpan agar tidak direset
-            correctAreas.add(name);
-
-            alert("Benar! 🎉 Ini adalah " + targetName);
-
-            answered = true;
-
-            setTimeout(() => {
-              newQuestion();
-            }, 1500);
-
+            alert("Benar! 🎉 " + targetName);
+            answeredDesa.add(targetName);
           } else {
-            // Jawaban salah → merah sementara
             layer.setStyle({ fillColor: "red", fillOpacity: 0.8 });
+            alert("Salah! 😅 Cari: " + targetName);
+          }
 
-            alert("Salah! 😅 Tadi disuruh cari: " + targetName);
+          answered = true;
 
-            answered = true;
-
-            setTimeout(() => {
-              resetUnanswered();
-              newQuestion();
-            }, 1500);
+          // cek apakah semua desa di kecamatan sudah ditebak
+          let semuaDesa = data.features.filter(f => f.properties.WADMKC === pilihKec.value).map(f => f.properties.WADMKD);
+          let belum = semuaDesa.filter(d => !answeredDesa.has(d));
+          if (belum.length > 0) {
+            // pilih desa berikutnya secara acak
+            targetName = belum[Math.floor(Math.random() * belum.length)];
+            document.getElementById("question").innerText = "Klik desa: " + targetName;
+          } else {
+            document.getElementById("question").innerText = "🎉 Semua desa sudah ditebak!";
+            targetName = "";
           }
         });
       }
     }).addTo(map);
 
-    // Zoom otomatis sesuai batas geojson
     map.fitBounds(geoLayer.getBounds());
 
-    newQuestion();
-  });
+    // ===========================
+    // ISI DROPDOWN KECAMATAN
+    // ===========================
+    let kecSet = new Set();
+    data.features.forEach(f => kecSet.add(f.properties.WADMKC));
+    kecSet.forEach(k => {
+      let opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = k;
+      pilihKec.appendChild(opt);
+    });
 
-// --------------------
-// Reset hanya yang salah
-// --------------------
-function resetUnanswered() {
+    // ===========================
+    // EVENT: KECAMATAN DIPILIH
+    // ===========================
+    pilihKec.addEventListener("change", () => {
+  let kec = pilihKec.value;
+  answeredDesa.clear();
+  targetName = "";
+
+  // hapus semua layer dulu
+  geoLayer.eachLayer(layer => map.removeLayer(layer));
+
+  // tampilkan hanya desa di kecamatan yang dipilih
   geoLayer.eachLayer(layer => {
-    let name = layer.feature.properties.nama || layer.feature.properties.NAMOBJ;
-
-    // Jika sudah benar → jangan reset (agar tetap hijau)
-    if (correctAreas.has(name)) return;
-
-    // reset area lain
-    geoLayer.resetStyle(layer);
-  });
-}
-
-// --------------------
-// New Question
-// --------------------
-function newQuestion() {
-  answered = false;
-
-  let list = geoLayer.toGeoJSON().features;
-
-  // Cari pertanyaan yang belum benar
-  let remaining = list.filter(f => {
-    let nm = f.properties.nama || f.properties.NAMOBJ;
-    return !correctAreas.has(nm);
+    if (layer.feature.properties.WADMKC === kec) {
+      layer.setStyle({ fillOpacity: 0.6, fillColor: "#ccc", color: "#555", weight: 1 });
+      layer.options.interactive = true;
+      layer.addTo(map);
+    }
   });
 
-  // Jika semua sudah hijau
-  if (remaining.length === 0) {
-    document.getElementById("question").innerText =
-      "🎉 Semua daerah sudah benar! Game selesai!";
-    return;
-  }
+  // zoom ke kecamatan
+  map.fitBounds(L.featureGroup(
+    geoLayer.getLayers().filter(l => l.feature.properties.WADMKC === kec)
+  ).getBounds());
 
-  // Random daerah yang belum benar
-  let random = remaining[Math.floor(Math.random() * remaining.length)];
+  // pilih desa pertama secara acak
+  let desaKec = geoLayer.getLayers().filter(l => l.feature.properties.WADMKC === kec).map(l => l.feature.properties.WADMKD);
+  targetName = desaKec[Math.floor(Math.random() * desaKec.length)];
 
-  targetName = random.properties.nama || random.properties.NAMOBJ;
+  document.getElementById("question").innerText = "Klik desa: " + targetName;
+});
 
-  document.getElementById("question").innerText =
-    "Tebak daerah: " + targetName;
-}
+    // ===========================
+    // BUTTON RESET
+    // ===========================
+    resetBtn.addEventListener("click", () => {
+      pilihKec.value = "";
+      targetName = "";
+      answeredDesa.clear();
+      document.getElementById("question").innerText = "Pilih kecamatan untuk mulai.";
+      geoLayer.eachLayer(layer => {
+        layer.setStyle({ fillOpacity: 0.6, fillColor: "#ccc", color: "#555", weight: 1 });
+        layer.options.interactive = true;
+      });
+      map.fitBounds(geoLayer.getBounds());
+    });
+
+  });
