@@ -22,9 +22,9 @@ osmLayer.addTo(map);
     const toggleLayerCheckbox = document.getElementById("toggleLayer");
     toggleLayerCheckbox.addEventListener("change", (e) => {
       if (e.target.checked) {
-        cartoLayer.addTo(map);  // Show the map layer
+        osmLayer.addTo(map);  // Show the map layer
       } else {
-        cartoLayer.removeFrom(map);  // Hide the map layer
+        osmLayer.removeFrom(map);  // Hide the map layer
       }
     });
 fetch("daerah.geojson")
