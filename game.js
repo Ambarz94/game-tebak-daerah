@@ -12,11 +12,11 @@ let resetBtn = document.getElementById("resetBtn");
 
 
 // Jika ingin menggunakan tile layer tanpa label (lebih bersih):
-const cartoLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19
-    });
-cartoLayer.addTo(map);
+const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+});
+osmLayer.addTo(map);
 
     // Handle the checkbox click event to show/hide the map layer
     const toggleLayerCheckbox = document.getElementById("toggleLayer");
